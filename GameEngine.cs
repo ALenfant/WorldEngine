@@ -1,4 +1,11 @@
-﻿using System;
+﻿/*
+ * Copyright 2011-2012 Antonin Lenfant (Aweb)
+ * 
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -60,7 +67,7 @@ namespace WorldEngine
 
         public void Init()
         {
-            bool DebugToConsole = true;
+            //bool DebugToConsole = true;
 
             // We have to create the TV object before anything else.
             TV = new TVEngine();
@@ -69,8 +76,9 @@ namespace WorldEngine
             TV.SetSearchDirectory(Application.StartupPath);
 
             // We put the debug file in the app directory
-            TV.SetDebugFile(Application.StartupPath + "\\WorldEngine-Debug.txt");
-            TV.SetDebugMode(true, true, DebugToConsole);
+            //TV.SetDebugFile(Application.StartupPath + "\\WorldEngine-Debug.txt");
+            //TV.SetDebugMode(true, true, DebugToConsole);
+            TV.SetDebugMode(false, false, false, false);
 
             // We initialize TV in the picture box of the form.
             TV.Init3DWindowed(GameHandle);
@@ -218,7 +226,7 @@ namespace WorldEngine
             // toolbox buttons, nor by clicking on the form "Form1" : you have to
             // create it by yourself. It's not as hard as it may sound...
             DoLoop = true;
-            
+
             TV.EnableProfiler(true, false);
 
             Main_Loop();
@@ -305,8 +313,9 @@ namespace WorldEngine
                 // We display everything that we have rendered
                 TV.RenderToScreen();
 
-                //GlobalVars.GameForm.Text = "Pos:" + sngPositionX + ";" + sngPositionY + ";" + sngPositionZ;
-                GlobalVars.GameForm.Text = Scene.GetTriangleNumber().ToString();
+                WorldPosition PlayerPos = WMap.GetPlayerPosition();
+                GlobalVars.GameForm.Text = "Pos:" + sngPositionX + " (" + PlayerPos.TileX + ");" + sngPositionY + ";" + sngPositionZ + " (" + PlayerPos.TileZ + ")";
+                //GlobalVars.GameForm.Text = Scene.GetTriangleNumber().ToString();
             }
 
             // We ask to quit.
@@ -414,20 +423,20 @@ namespace WorldEngine
             // look at), we update the scene's camera.
             Scene.SetCamera(sngPositionX, sngPositionY, sngPositionZ, snglookatX, snglookatY, snglookatZ);
 
-            //...
-            GlobalVars.GameEngine.WMap.ChangePlayerPos(sngPositionX, sngPositionY, sngPositionZ);
+            //We set it in the engine
+            GlobalVars.GameEngine.WMap.SetPlayerPosition(sngPositionX, sngPositionY, sngPositionZ);
         }
 
         public void Dispose()
         {
             TV = null;
-            DoLoop = false; 
+            DoLoop = false;
         }
 
         public void Quit()
         {
-            WMap.LoadThreadWork = false;
-            WMap.LoadHeightmapsThreadWork = false;
+            //first of all, we close the world map manager
+            WMap.Quit();
 
             // We want to quit the project, so we start by desroyng
             // the texture factory.

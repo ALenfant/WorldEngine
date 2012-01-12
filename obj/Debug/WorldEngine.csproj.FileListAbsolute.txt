@@ -19,6 +19,5 @@ C:\Users\Antonin\Documents\Dropbox\Projets\C#\WorldEngine\obj\Debug\WorldEngine.
 C:\Users\Antonin\Documents\Dropbox\Projets\C#\WorldEngine\obj\Debug\WorldEngine.pdb
 C:\Users\Antonin\Documents\Dropbox\Projets\C#\WorldEngine\bin\Debug\TVSceneManager.dll
 C:\Users\Antonin\Documents\Dropbox\Projets\C#\WorldEngine\bin\Debug\WorldEngine.exe.config
-C:\Users\Antonin\Documents\Dropbox\Projets\C#\WorldEngine\bin\Debug\NGenerics.dll
 C:\Users\Antonin\Documents\Dropbox\Projets\C#\WorldEngine\bin\Debug\NGenerics.pdb
 C:\Users\Antonin\Documents\Dropbox\Projets\C#\WorldEngine\bin\Debug\NGenerics.xml

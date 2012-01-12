@@ -1,12 +1,9 @@
-// ________________________________________________________________________
-// TRUEVISION8                        (web: http://www.truevision3d.com)
-// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-// Tutorial 8 : A complete landscape.
-// ¯¯¯¯¯¯¯¯¯¯
-// Description : In this 8th tutorial, we take the last tutorial but
-// ¯¯¯¯¯¯¯¯¯¯¯   we add everything we can to make this world the most
-//               impressive we can with effects like : clouds and
-//               a sun with lens flare.
+/*
+ * Copyright 2011-2012 Antonin Lenfant (Aweb)
+ * 
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+ */
 
 using System;
 using System.Drawing;

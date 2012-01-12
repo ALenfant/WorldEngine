@@ -1,4 +1,11 @@
-﻿using System;
+﻿/*
+ * Copyright 2011-2012 Antonin Lenfant (Aweb)
+ * 
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -64,12 +71,13 @@ namespace WorldEngine
 
         TVScene Scene;
 
+        bool Shutdown = false; //Indicates if world map currently shutdowning
+
         MapTile[][] MapTiles; //We use jagged arrays because it's much faster than multidimentionnal arrays in c# //TODO : Flattened array?
         bool LoadingMapTiles = true;
 
-        Thread LoadThread;
-        public bool LoadThreadWork = true;
-
+        Thread LoadTilesThread;
+        public bool LoadTilesThreadWork = true;
         Thread LoadHeightmapsThread;
         public bool LoadHeightmapsThreadWork = true;
 
@@ -79,6 +87,7 @@ namespace WorldEngine
         NGenerics.DataStructures.Queues.PriorityQueue<TilePosition, int> TilesHeightmapToLoad = new NGenerics.DataStructures.Queues.PriorityQueue<TilePosition, int>(NGenerics.DataStructures.Queues.PriorityQueueType.Minimum);
         //LinkedList<TilePosition> TilesHeightmapToLoad = new LinkedList<TilePosition>();
 
+        #region "Constructor"
         //Constructor
         public WorldMap(TVScene Scene)
         {
@@ -88,16 +97,18 @@ namespace WorldEngine
             this.CheckLoadTiles(true);
 
             //Start the loader thread
-            LoadThread = new Thread(new ThreadStart(CheckTilesToLoad));
-            LoadThread.Start();
+            LoadTilesThread = new Thread(new ThreadStart(LoadTilesLoop));
+            LoadTilesThread.Start();
 
             //Start the heightmap loader thread
-            LoadHeightmapsThread = new Thread(new ThreadStart(LoadHeightmaps));
+            LoadHeightmapsThread = new Thread(new ThreadStart(LoadHeightmapsLoop));
             LoadHeightmapsThread.Start();
 
             System.Diagnostics.Debug.WriteLine("WorldMap initialized");
         }
+        #endregion
 
+        #region Rendering loop
         //Render the different tiles
         public void Render()
         {
@@ -116,25 +127,26 @@ namespace WorldEngine
             }
             //System.IO.File.AppendAllText("C:\\debugtv.txt", (Process.GetCurrentProcess().TotalProcessorTime - RenderingBegin).TotalMilliseconds+"ms\r\n");
         }
+        #endregion
 
+        #region Setters
         //Change the player's possition
-        public void ChangePlayerPos(float PosX, float PosY, float PosZ)
+        public void SetPlayerPosition(float PosX, float PosY, float PosZ)
         {
             PlayerPos = GetWorldPos(PosX, PosY, PosZ);
         }
+        #endregion
 
-        //Get the WorldPosition's equivalent of absolute coordinates
-        public WorldPosition GetWorldPos(float PosX, float PosY, float PosZ)
+        #region Getters
+        public WorldPosition GetPlayerPosition()
         {
-            WorldPosition WorldPos = new WorldPosition();
-            WorldPos.TilePosY = PosY; //Easiest : done !
-            WorldPos.TileX = (int)PosX / (256 * MapTile.TileSize) - ((PosX < 0) ? 1 : 0);
-            WorldPos.TileZ = (int)PosZ / (256 * MapTile.TileSize) - ((PosZ < 0) ? 1 : 0);
-            WorldPos.TilePosX = PosX % (256 * MapTile.TileSize);
-            WorldPos.TilePosZ = PosZ % (256 * MapTile.TileSize);
-
+            return PlayerPos;
+        }
+        public WorldPosition GetWorldPosition()
+        {
             return WorldPos;
         }
+        #endregion
 
         //Check if there are tiles to load and load them
         public bool CheckLoadTiles(bool force = false) //Force : force the reload of all the tiles
@@ -198,7 +210,8 @@ namespace WorldEngine
                         //LoadTileHeightmap2(MapTiles_New[i][j]);
 
                         WorldPosition SplatPosition = new WorldPosition(Position);
-                        /*MapTiles_New[i][j].Landscape.AddSplattingTexture(GlobalVars.GameEngine.Globals.GetTex("SplattingTexture"), 1, 1, 1, 0, 0);
+                        /*
+                        MapTiles_New[i][j].Landscape.AddSplattingTexture(GlobalVars.GameEngine.Globals.GetTex("SplattingTexture"), 1, 1, 1, 0, 0);
                         MapTiles_New[i][j].Landscape.ExpandSplattingTexture(GlobalVars.GameEngine.Globals.GetTex("SplattingAlphaTexture"), GlobalVars.GameEngine.Globals.GetTex("SplattingTexture"), 0, 0, 4, 4);
                         MapTiles_New[i][j].Landscape.SetSplattingEnable(true);*/
                         //AddSplattingToTile(SplatPosition, GlobalVars.GameEngine.Globals.GetTex("SplattingTexture"));
@@ -256,14 +269,24 @@ namespace WorldEngine
                 MTV3D65.CONST_TV_LANDSCAPE_PRECISION precision = TileToLoad.Landscape.GetPrecision();
                 int Vertices = (256 / GlobalVars.getTVPrecisionDivider(precision)) * TileToLoad.Landscape.GetLandWidth();
                 float[] Height_Array = new float[Vertices * Vertices];
-                for (int i = 0; i < Vertices; i++)
+                for (int j = 0; j < Vertices; j++)
                 {
-                    for (int j = 0; j < Vertices; j++)
+                    for (int i = 0; i < Vertices; i++)
                     {
-                        Height_Array[i * Vertices + j] = (float)Math.Sin(Math.Sqrt(Math.Pow(i * 2, 2) + Math.Pow(j * 2, 2)) / 25) * 10;
+                        if ((TileToLoad.TilePosition.TileX == -1) && (TileToLoad.TilePosition.TileZ == 0) && (j == Vertices - 1) && (i == Vertices - 1))
+                        {
+                            Debug.WriteLine("debug");
+                        }
+
+                        int realx = i + TileToLoad.TilePosition.TileX * Vertices;
+                        int realz = j + TileToLoad.TilePosition.TileZ * Vertices;
+
+                        //Sinus-like thing... Yeah, it's useless but it looks good (well, for a demo... okay, I'm not that inspired I think !)
+                        Height_Array[j * Vertices + i] = (float)(Math.Sin(Math.Sqrt(Math.Pow(realx, 2) + Math.Pow(realz, 2))/25)*100);
                     }
                 }
-                TileToLoad.Landscape.SetHeightArray(0, 0, Vertices, Vertices, Height_Array);
+                TileToLoad.Landscape.SetHeightArray(0, 0, Vertices, Vertices, Height_Array); //This is 100 TIMES FASTER than setting every point one by one! (which is not that surprising)
+
                 //double Total1 = (System.Diagnostics.Process.GetCurrentProcess().TotalProcessorTime - Start1).TotalMilliseconds;
 
                 //TimeSpan Start2 = System.Diagnostics.Process.GetCurrentProcess().TotalProcessorTime;
@@ -276,8 +299,8 @@ namespace WorldEngine
                 }*/
                 //double Total2 = (System.Diagnostics.Process.GetCurrentProcess().TotalProcessorTime - Start2).TotalMilliseconds;
 
-                //Debug.WriteLine("Method 1 " + Total1 + "ms; Method 2 " + Total2 + "ms");
-                //Method 1 31,2002ms; Method 2 3120,02ms
+                //Debug.WriteLine("Method 1 : " + Total1 + "ms; Method 2 : " + Total2 + "ms");
+                //Method 1 : 31,2002ms; Method 2 : 3120,02ms
 
                 TileToLoad.Landscape.FlushHeightChanges();
             }
@@ -292,34 +315,6 @@ namespace WorldEngine
             {
                 //If the tile is still used
                 MapTiles[tilei][tilej].Landscape.SetHeight(1, 1, 50);
-            }
-        }
-
-        //Background check made regularly to check if there are tiles to load
-        private void CheckTilesToLoad()
-        {
-            while (LoadThreadWork)
-            {
-                if (!CheckLoadTiles())
-                {
-                    //If no tile loaded
-                    System.Threading.Thread.Sleep(1000);
-                }
-            }
-        }
-
-        //Get a position's height
-        public float GetPositionHeight(WorldPosition Position)
-        {
-            int tilei = Position.TileX - WorldPos.TileX + RenderedTilesDistance;
-            int tilej = Position.TileX - WorldPos.TileX + RenderedTilesDistance;
-            if ((tilei >= 0) && (tilei <= 2 * RenderedTilesDistance) && (tilej >= 0) && (tilej <= 2 * RenderedTilesDistance))
-            {
-                return MapTiles[tilei][tilej].Landscape.GetHeight(Position.TilePosX, Position.TilePosZ);
-            }
-            else
-            {
-                return 0;
             }
         }
 
@@ -342,16 +337,34 @@ namespace WorldEngine
             int tilej = Position.TileX - WorldPos.TileX + RenderedTilesDistance;
             if ((tilei >= 0) && (tilei <= 2 * RenderedTilesDistance) && (tilej >= 0) && (tilej <= 2 * RenderedTilesDistance))
             {
+                /*
                 MapTiles[tilei][tilej].Landscape.AddSplattingTexture(SplattingTexture, 1, 15, 15, 0, 0);
                 //MapTiles[tilei][tilej].Landscape.ExpandSplattingTexture(IDAlpha, IDGrass, 0, 0, 4, 4);
                 MapTiles[tilei][tilej].Landscape.SetSplattingEnable(true, -1, 1);
+                 * */
             }
         }
 
-        /* Load tile heightmap */
-        void LoadHeightmaps()
+        #region Thread loops
+        /* Thread loops */
+        //Background check made regularly to check if there are tiles to load
+        private void LoadTilesLoop()
         {
-            while (LoadHeightmapsThreadWork)
+            while (!Shutdown)
+            {
+                if (!CheckLoadTiles())
+                {
+                    //If no tile loaded
+                    System.Threading.Thread.Sleep(1000);
+                }
+            }
+            this.LoadTilesThreadWork = false;
+        }
+
+        //Load tile heightmap
+        void LoadHeightmapsLoop()
+        {
+            while (!Shutdown)
             {
                 if (!LoadingMapTiles && (TilesHeightmapToLoad.Count != 0))
                 {
@@ -391,10 +404,11 @@ namespace WorldEngine
                         }
 
                         //DEBUG : splatting
+                        /*
                         MapTiles[tilei][tilej].Landscape.AddSplattingTexture(GlobalVars.GameEngine.Globals.GetTex("SplattingTexture"), 1, 1, 1, 0, 0);
                         MapTiles[tilei][tilej].Landscape.ExpandSplattingTexture(GlobalVars.GameEngine.Globals.GetTex("SplattingAlphaTexture"), GlobalVars.GameEngine.Globals.GetTex("SplattingTexture"), 0, 0, 4, 4);
                         MapTiles[tilei][tilej].Landscape.SetSplattingEnable(true);
-
+                        */
                         Debug.WriteLine("Heightmap loaded (" + CurrentPosition.TileX + ";" + CurrentPosition.TileZ + ")");
                     }
                 }
@@ -404,10 +418,38 @@ namespace WorldEngine
                     Thread.Sleep(1000);
                 }
             }
+            this.LoadHeightmapsThreadWork = false;
+        }
+        #endregion
+
+        #region Helper functions
+        //Get a position's height
+        public float GetPositionHeight(WorldPosition Position)
+        {
+            int tilei = Position.TileX - WorldPos.TileX + RenderedTilesDistance;
+            int tilej = Position.TileX - WorldPos.TileX + RenderedTilesDistance;
+            if ((tilei >= 0) && (tilei <= 2 * RenderedTilesDistance) && (tilej >= 0) && (tilej <= 2 * RenderedTilesDistance))
+            {
+                return MapTiles[tilei][tilej].Landscape.GetHeight(Position.TilePosX, Position.TilePosZ);
+            }
+            else
+            {
+                return 0;
+            }
         }
 
-        /* Load tile meshes */
+        //Get the WorldPosition's equivalent of absolute coordinates
+        public WorldPosition GetWorldPos(float PosX, float PosY, float PosZ)
+        {
+            WorldPosition WorldPos = new WorldPosition();
+            WorldPos.TilePosY = PosY; //Easiest : done !
+            WorldPos.TileX = (int)PosX / (256 * MapTile.TileSize) - ((PosX < 0) ? 1 : 0);
+            WorldPos.TileZ = (int)PosZ / (256 * MapTile.TileSize) - ((PosZ < 0) ? 1 : 0);
+            WorldPos.TilePosX = PosX % (256 * MapTile.TileSize);
+            WorldPos.TilePosZ = PosZ % (256 * MapTile.TileSize);
 
+            return WorldPos;
+        }
 
         public int GetTilePosX(int i)
         {
@@ -417,6 +459,17 @@ namespace WorldEngine
         public int GetTilePosZ(int j)
         {
             return WorldPos.TileZ + (j - RenderedTilesDistance);
+        }
+        #endregion
+
+        //Quit and wait for every thread to finish
+        public void Quit()
+        {
+            this.Shutdown = true; //We indicate to threads that they must shutdown at once
+            while (this.LoadTilesThreadWork || this.LoadHeightmapsThreadWork)
+            {
+                //Waiting for full shutdown in order to avoid any errors
+            }
         }
     }
 

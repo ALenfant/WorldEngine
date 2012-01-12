@@ -23,6 +23,7 @@ Want to help?
 -------------
 I'm in need of other people to help me improving this engine !
 What you can help me with :
+
 * Reporting issues with the engine
 * Helping me fix them
 * Optimizing the hell out of the engine (I want it to be as lightweight as possible in order to be able to use it in a *real* game)

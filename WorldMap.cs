@@ -14,7 +14,7 @@ namespace WorldEngine
         public int TileX = 0;
         public int TileZ = 0;
 
-        public TilePosition(int TileX, int TileZ)
+        public TilePosition(int TileX = 0, int TileZ = 0)
         {
             this.TileX = TileX;
             this.TileZ = TileZ;

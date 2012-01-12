@@ -161,16 +161,16 @@ namespace WorldEngine
             // Initialize the lens flares.
             Atmos.LensFlare_SetLensNumber(4);
             Atmos.LensFlare_Enable(true);
-            Atmos.LensFlare_SetLensParams(1, Globals.GetTex("Flare1"), 2 * 5f, 40, Globals.RGBA(1f, 1f, 1f, 0.5f), Globals.RGBA(1f, 1f, 1f, 0.5f));
-            Atmos.LensFlare_SetLensParams(2, Globals.GetTex("Flare2"), 2 * 1f, 18, Globals.RGBA(1f, 1f, 1f, 0.5f), Globals.RGBA(1f, 1f, 1f, 0.5f));
-            Atmos.LensFlare_SetLensParams(3, Globals.GetTex("Flare3"), 2 * 1.8f, 15, Globals.RGBA(1f, 1f, 1f, 0.5f), Globals.RGBA(0.7f, 1f, 1f, 0.5f));
-            Atmos.LensFlare_SetLensParams(4, Globals.GetTex("Flare4"), 2 * 1f, 6, Globals.RGBA(1f, 0.1f, 0f, 0.5f), Globals.RGBA(0.5f, 1f, 1f, 0.5f));
+            Atmos.LensFlare_SetLensParams(0, Globals.GetTex("Flare1"), 2 * 5f, 40, Globals.RGBA(1f, 1f, 1f, 0.5f), Globals.RGBA(1f, 1f, 1f, 0.5f));
+            Atmos.LensFlare_SetLensParams(1, Globals.GetTex("Flare2"), 2 * 1f, 18, Globals.RGBA(1f, 1f, 1f, 0.5f), Globals.RGBA(1f, 1f, 1f, 0.5f));
+            Atmos.LensFlare_SetLensParams(2, Globals.GetTex("Flare3"), 2 * 1.8f, 15, Globals.RGBA(1f, 1f, 1f, 0.5f), Globals.RGBA(0.7f, 1f, 1f, 0.5f));
+            Atmos.LensFlare_SetLensParams(3, Globals.GetTex("Flare4"), 2 * 1f, 6, Globals.RGBA(1f, 0.1f, 0f, 0.5f), Globals.RGBA(0.5f, 1f, 1f, 0.5f));
 
             // New : also for fun, we add water. We start by loading the
             // water tetxure...
 
             sngWaterHeight = -1; //60
-            TextureFactory.LoadTexture("Media\\water.jpg", "Water");
+            TextureFactory.LoadTexture("Media\\water.bmp", "Water");
 
             WaterMesh = Scene.CreateMeshBuilder();
             WaterMesh.AddFloor(Globals.GetTex("Water"), -700, 0, (8 * 256) - 700, 8 * 256, sngWaterHeight, 1, 1, false);

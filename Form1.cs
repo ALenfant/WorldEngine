@@ -20,8 +20,7 @@ namespace WorldEngine
 	public class Form1 : System.Windows.Forms.Form
 	{
 		private System.Windows.Forms.PictureBox pictureBox1;
-		private System.Windows.Forms.Button button1;
-        private Button button2;
+        private System.Windows.Forms.Button button1;
 
 		private System.ComponentModel.Container components = null;
 
@@ -53,7 +52,6 @@ namespace WorldEngine
 		{
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -62,34 +60,23 @@ namespace WorldEngine
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.pictureBox1.Location = new System.Drawing.Point(8, 8);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(667, 484);
+            this.pictureBox1.Size = new System.Drawing.Size(1128, 619);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(579, 498);
+            this.button1.Location = new System.Drawing.Point(1040, 633);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(96, 40);
             this.button1.TabIndex = 1;
             this.button1.Text = "Quit";
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(299, 498);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(95, 40);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "DO IT NOW";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
             // Form1
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(678, 550);
-            this.Controls.Add(this.button2);
+            this.ClientSize = new System.Drawing.Size(1148, 685);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.pictureBox1);
             this.Name = "Form1";

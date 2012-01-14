@@ -268,10 +268,10 @@ namespace WorldEngine
                 //TimeSpan Start1 = System.Diagnostics.Process.GetCurrentProcess().TotalProcessorTime;
                 MTV3D65.CONST_TV_LANDSCAPE_PRECISION precision = TileToLoad.Landscape.GetPrecision();
                 int Vertices = (256 / GlobalVars.getTVPrecisionDivider(precision)) * TileToLoad.Landscape.GetLandWidth();
-                float[] Height_Array = new float[Vertices * Vertices];
-                for (int j = 0; j < Vertices; j++)
+                float[] Height_Array = new float[(Vertices + 1) * (Vertices + 1)];
+                for (int j = 0; j <= Vertices; j++)
                 {
-                    for (int i = 0; i < Vertices; i++)
+                    for (int i = 0; i <= Vertices; i++)
                     {
                         if ((TileToLoad.TilePosition.TileX == -1) && (TileToLoad.TilePosition.TileZ == 0) && (j == Vertices - 1) && (i == Vertices - 1))
                         {
@@ -282,10 +282,10 @@ namespace WorldEngine
                         int realz = j + TileToLoad.TilePosition.TileZ * Vertices;
 
                         //Sinus-like thing... Yeah, it's useless but it looks good (well, for a demo... okay, I'm not that inspired I think !)
-                        Height_Array[j * Vertices + i] = (float)(Math.Sin(Math.Sqrt(Math.Pow(realx, 2) + Math.Pow(realz, 2))/25)*100);
+                        Height_Array[j * (Vertices + 1) + i] = (float)(Math.Sin(Math.Sqrt(Math.Pow(realx, 2) + Math.Pow(realz, 2)) / 25) * 100);
                     }
                 }
-                TileToLoad.Landscape.SetHeightArray(0, 0, Vertices, Vertices, Height_Array); //This is 100 TIMES FASTER than setting every point one by one! (which is not that surprising)
+                TileToLoad.Landscape.SetHeightArray(0, 0, Vertices + 1, Vertices + 1, Height_Array); //This is 100 TIMES FASTER than setting every point one by one! (which is not that surprising)
 
                 //double Total1 = (System.Diagnostics.Process.GetCurrentProcess().TotalProcessorTime - Start1).TotalMilliseconds;
 
@@ -302,7 +302,7 @@ namespace WorldEngine
                 //Debug.WriteLine("Method 1 : " + Total1 + "ms; Method 2 : " + Total2 + "ms");
                 //Method 1 : 31,2002ms; Method 2 : 3120,02ms
 
-                TileToLoad.Landscape.FlushHeightChanges();
+                //TileToLoad.Landscape.FlushHeightChanges();
             }
         }
 
@@ -379,25 +379,25 @@ namespace WorldEngine
                         MapTiles[tilei][tilej].HeightmapLoaded = true;
 
                         //Left
-                        if (tilei > 0)
+                        if ((tilei > 0) && (MapTiles[tilei - 1][tilej].HeightmapLoaded))
                         {
                             MapTiles[tilei][tilej].Landscape.FixSeams(MapTiles[tilei - 1][tilej].Landscape);
                             MapTiles[tilei - 1][tilej].Landscape.FixSeams(MapTiles[tilei][tilej].Landscape);
                         }
                         //Right
-                        if (tilei < 2 * RenderedTilesDistance)
+                        if ((tilei < 2 * RenderedTilesDistance) && (MapTiles[tilei + 1][tilej].HeightmapLoaded))
                         {
                             MapTiles[tilei][tilej].Landscape.FixSeams(MapTiles[tilei + 1][tilej].Landscape);
                             MapTiles[tilei + 1][tilej].Landscape.FixSeams(MapTiles[tilei][tilej].Landscape);
                         }
                         //Top
-                        if (tilej > 0)
+                        if ((tilej > 0) && (MapTiles[tilei][tilej - 1].HeightmapLoaded))
                         {
                             MapTiles[tilei][tilej].Landscape.FixSeams(MapTiles[tilei][tilej - 1].Landscape);
                             MapTiles[tilei][tilej - 1].Landscape.FixSeams(MapTiles[tilei][tilej].Landscape);
                         }
                         //Bottom
-                        if (tilej < 2 * RenderedTilesDistance)
+                        if ((tilej < 2 * RenderedTilesDistance) && (MapTiles[tilei][tilej + 1].HeightmapLoaded))
                         {
                             MapTiles[tilei][tilej].Landscape.FixSeams(MapTiles[tilei][tilej + 1].Landscape);
                             MapTiles[tilei][tilej + 1].Landscape.FixSeams(MapTiles[tilei][tilej].Landscape);
@@ -427,13 +427,16 @@ namespace WorldEngine
         public float GetPositionHeight(WorldPosition Position)
         {
             int tilei = Position.TileX - WorldPos.TileX + RenderedTilesDistance;
-            int tilej = Position.TileX - WorldPos.TileX + RenderedTilesDistance;
+            int tilej = Position.TileZ - WorldPos.TileZ + RenderedTilesDistance;
             if ((tilei >= 0) && (tilei <= 2 * RenderedTilesDistance) && (tilej >= 0) && (tilej <= 2 * RenderedTilesDistance))
             {
-                return MapTiles[tilei][tilej].Landscape.GetHeight(Position.TilePosX, Position.TilePosZ);
+                TV_3DVECTOR RealPos = GetRealPos(Position);
+                //return MapTiles[tilei][tilej].Landscape.GetHeight(Position.TilePosX, Position.TilePosZ);
+                return MapTiles[tilei][tilej].Landscape.GetHeight(RealPos.x, RealPos.z);
             }
             else
             {
+                Debug.WriteLine("HEIGHT_NOT_FOUND");
                 return 0;
             }
         }
@@ -449,6 +452,15 @@ namespace WorldEngine
             WorldPos.TilePosZ = PosZ % (256 * MapTile.TileSize);
 
             return WorldPos;
+        }
+
+        public TV_3DVECTOR GetRealPos(WorldPosition WorldPos)
+        {
+            TV_3DVECTOR RealPos = new TV_3DVECTOR();
+            RealPos.y = WorldPos.TilePosY; //As always, the easiest first !
+            RealPos.x = (WorldPos.TileX < 0 ? (WorldPos.TileX + 1) : WorldPos.TileX) * (256 * MapTile.TileSize) + WorldPos.TilePosX;
+            RealPos.z = (WorldPos.TileZ < 0 ? (WorldPos.TileZ + 1) : WorldPos.TileZ) * (256 * MapTile.TileSize) + WorldPos.TilePosZ;
+            return RealPos;
         }
 
         public int GetTilePosX(int i)

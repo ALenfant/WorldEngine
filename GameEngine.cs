@@ -279,6 +279,7 @@ namespace WorldEngine
                 // underwater. To give a cool underwater effect, we will add fog.
                 // If we are over the ground, then don't add the fog but render
                 // the lens flare.
+                /*
                 if (sngPositionY < sngWaterHeight)
                 {
                     //' Render a blue fog to simulate under water.
@@ -289,15 +290,15 @@ namespace WorldEngine
                     Atmos.LensFlare_Enable(false);
                 }
                 else
-                {
-                    // New : we have to render the lens flare.
-                    Atmos.LensFlare_Enable(true);
-                    Atmos.Fog_Enable(false);
-                    /*Atmos.Fog_Enable(true);
-                    Atmos.Fog_SetColor(1, 1, 1);
-                    Atmos.Fog_SetParameters(50f, 100f, 0.01f);
-                    Atmos.Fog_SetType(CONST_TV_FOG.TV_FOG_LINEAR, CONST_TV_FOGTYPE.TV_FOGTYPE_VERTEX);*/
-                }
+                {*/
+                // New : we have to render the lens flare.
+                Atmos.LensFlare_Enable(true);
+                Atmos.Fog_Enable(false);
+                /*Atmos.Fog_Enable(true);
+                Atmos.Fog_SetColor(1, 1, 1);
+                Atmos.Fog_SetParameters(50f, 100f, 0.01f);
+                Atmos.Fog_SetType(CONST_TV_FOG.TV_FOG_LINEAR, CONST_TV_FOGTYPE.TV_FOGTYPE_VERTEX);*/
+                //}
 
                 // New have to render the sky, the sun and lens flares
                 Atmos.Atmosphere_Render();
@@ -314,7 +315,7 @@ namespace WorldEngine
                 TV.RenderToScreen();
 
                 WorldPosition PlayerPos = WMap.GetPlayerPosition();
-                GlobalVars.GameForm.Text = "Pos:" + sngPositionX + " (" + PlayerPos.TileX + ");" + sngPositionY + ";" + sngPositionZ + " (" + PlayerPos.TileZ + ")";
+                GlobalVars.GameForm.Text = "Pos:" + sngPositionX + " (" + PlayerPos.TileX + ");" + sngPositionY + ";" + sngPositionZ + " (" + PlayerPos.TileZ + ") + (" + PlayerPos.TilePosX + ";" + PlayerPos.TilePosY + ";" + PlayerPos.TilePosZ + ")";
                 //GlobalVars.GameForm.Text = Scene.GetTriangleNumber().ToString();
             }
 
